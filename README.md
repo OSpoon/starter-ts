@@ -1,4 +1,4 @@
-# lib-ts
+# starter-ts
 
  基于此模板进行工具开发
 
@@ -8,7 +8,7 @@
 
 ```bash
 # 示例
-re-pkg -n lib-ts -d "lib-ts" -a "OSpoon" -e "ospoon@qq.com"
+re-pkg -n starter-ts -d "starter-ts" -a "OSpoon" -e "ospoon@qq.com"
 ```
 
 ```bash
