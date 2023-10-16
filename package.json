@@ -1,7 +1,7 @@
 {
   "name": "name-placeholder",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "description-placeholder",
   "author": "author-placeholder",
   "license": "MIT",
@@ -30,10 +30,6 @@
         "./dist/index.d.ts"
       ]
     }
-  },
-  "bin": {
-    "re-pkg": "./bin/cli.mjs",
-    "replace-pkg": "./bin/cli.mjs"
   },
   "files": [
     "dist"
