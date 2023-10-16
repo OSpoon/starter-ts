@@ -1,16 +1,16 @@
 {
-  "name": "name-placeholder",
+  "name": "starter-ts",
   "type": "module",
   "version": "0.0.0",
-  "description": "description-placeholder",
-  "author": "author-placeholder",
+  "description": "描述这个库想要做什么",
+  "author": "填写开发者昵称 填写开发者邮箱",
   "license": "MIT",
-  "homepage": "https://github.com/author-placeholder/name-placeholder#readme",
+  "homepage": "https://github.com/填写开发者昵称/starter-ts#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/author-placeholder/name-placeholder.git"
+    "url": "git+https://github.com/填写开发者昵称/starter-ts.git"
   },
-  "bugs": "https://github.com/author-placeholder/name-placeholder/issues",
+  "bugs": "https://github.com/填写开发者昵称/starter-ts/issues",
   "keywords": [],
   "sideEffects": false,
   "exports": {
@@ -35,6 +35,7 @@
     "dist"
   ],
   "scripts": {
+    "adapt": "adapt-pkg --boot",
     "build": "unbuild",
     "dev": "unbuild --stub",
     "lint": "eslint .",
@@ -49,6 +50,7 @@
     "@antfu/eslint-config": "^1.0.0-beta.22",
     "@release-it/conventional-changelog": "^7.0.2",
     "@types/node": "^20.8.3",
+    "adapt-pkg": "^0.0.1",
     "eslint": "^8.51.0",
     "esno": "^0.17.0",
     "lint-staged": "^14.0.1",

@@ -1,21 +1,24 @@
 # starter-ts
 
- 基于此模板进行工具开发
+基于此模板进行工具开发
 
 ## 使用
 
-使用 `re-pkg` 对模板进行初始化
+安装项目所需依赖
 
 ```bash
-# 示例
-re-pkg -n starter-ts -d "starter-ts" -a "OSpoon" -e "ospoon@qq.com"
+npm install
 ```
 
+初始化项目名称, 项目描述, 仓库信息, 开发者信息
+
 ```bash
-# 查看帮助信息
-re-pkg --help
+npm run adapt
 ```
+
+PS: 重复执行原因信息回被覆盖
+
 
 ## License
 
-[MIT](./LICENSE) License © 2023-PRESENT [OSpoon](https://github.com/OSpoon)
+[MIT](./LICENSE) License © 2023-PRESENT [填写开发者昵称](https://github.com/填写开发者昵称)
