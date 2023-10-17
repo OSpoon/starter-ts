@@ -1,6 +1,12 @@
-# create-starter-ts
+# starter-ts
 
 基于此模板进行工具开发
+
+## 拉取项目
+
+```bash
+npx degit ospoon/starter-ts <项目名称>
+```
 
 ## 使用
 
