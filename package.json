@@ -50,7 +50,7 @@
     "@antfu/eslint-config": "^1.0.0-beta.22",
     "@release-it/conventional-changelog": "^7.0.2",
     "@types/node": "^20.8.3",
-    "adapt-pkg": "^0.0.1",
+    "adapt-pkg": "^0.0.2",
     "eslint": "^8.51.0",
     "esno": "^0.17.0",
     "lint-staged": "^14.0.1",
