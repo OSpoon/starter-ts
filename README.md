@@ -1,4 +1,4 @@
-# starter-ts
+# create-starter-ts
 
 基于此模板进行工具开发
 
@@ -18,6 +18,20 @@ npm run adapt
 
 PS: 重复执行原因信息回被覆盖
 
+## 发布
+
+基于 **Github Actions** & **release-it** 的发布流程
+
+### 需要提供
+
+- **GHP_TOKEN**
+- **NPM_TOKEN**
+
+PS: 因禁止 `GITHUB_` 作为 `prefix`, 所以使用 `GHP_TOKEN` 代替 `GITHUB_TOKEN`;
+
+### 激活发布
+
+默认手动执行 `actions`, 可在 `.github/workflows/release.yml` 随时调整
 
 ## License
 

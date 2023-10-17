@@ -1,16 +1,16 @@
 {
-  "name": "starter-ts",
+  "name": "create-starter-ts",
   "type": "module",
   "version": "0.0.0",
   "description": "描述这个库想要做什么",
   "author": "填写开发者昵称 填写开发者邮箱",
   "license": "MIT",
-  "homepage": "https://github.com/填写开发者昵称/starter-ts#readme",
+  "homepage": "https://github.com/填写开发者昵称/create-starter-ts#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/填写开发者昵称/starter-ts.git"
+    "url": "git+https://github.com/填写开发者昵称/create-starter-ts.git"
   },
-  "bugs": "https://github.com/填写开发者昵称/starter-ts/issues",
+  "bugs": "https://github.com/填写开发者昵称/create-starter-ts/issues",
   "keywords": [],
   "sideEffects": false,
   "exports": {
