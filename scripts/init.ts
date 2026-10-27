@@ -54,13 +54,14 @@ const initialDescription = pkg.description === '_description_' ? '' : pkg.descri
 const initialRepository = pkg.name === 'pkg-placeholder' ? undefined : previousRepo
 
 const logoLines = [
-  '█████  █████   ███   ████  █████  █████  ████    █████  █████',
-  '█        █    █   █  █   █   █      █    █   █   █      █    ',
-  '█████    █    █████  ████    █      █    ████    ████   █████',
-  '    █    █    █   █  █  █    █      █    █  █    █          █',
-  '█████    █    █   █  █   █   █    █████  █   █   ████   █████',
+  '███████╗████████╗ █████╗ ██████╗ ████████╗███████╗██████╗',
+  '██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗',
+  '███████╗   ██║   ███████║██████╔╝   ██║   █████╗  ██████╔╝',
+  '╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ██╔══╝  ██╔══██╗',
+  '███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗██║  ██║',
+  '╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝',
 ]
-const logoGrays = ['\x1B[38;5;250m', '\x1B[38;5;248m', '\x1B[38;5;245m', '\x1B[38;5;243m', '\x1B[38;5;240m']
+const logoGrays = ['\x1B[38;5;250m', '\x1B[38;5;248m', '\x1B[38;5;245m', '\x1B[38;5;243m', '\x1B[38;5;240m', '\x1B[38;5;238m']
 console.log()
 for (const [index, line] of logoLines.entries())
   console.log(pc.isColorSupported ? `${logoGrays[index]}${line}\x1B[0m` : line)
