@@ -69,6 +69,7 @@
     "eslint-plugin-sonarjs": "catalog:cli",
     "knip": "catalog:cli",
     "nano-staged": "catalog:cli",
+    "picocolors": "catalog:cli",
     "publint": "catalog:cli",
     "simple-git-hooks": "catalog:cli",
     "skills": "catalog:agentic",

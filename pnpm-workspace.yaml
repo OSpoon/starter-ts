@@ -37,6 +37,7 @@ catalogs:
     eslint-plugin-sonarjs: ^4.2.2
     knip: ^6.38.0
     nano-staged: ^1.0.2
+    picocolors: ^1.1.1
     publint: ^0.3.24
     simple-git-hooks: ^2.14.0
     taze: ^21.2.0

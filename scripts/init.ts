@@ -1,7 +1,8 @@
 import { access, mkdir, readdir, readFile, rename, rmdir, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
-import { cancel, group, intro, log, note, outro, tasks, text } from '@clack/prompts'
+import { cancel, group, intro, log, outro, tasks, text } from '@clack/prompts'
+import pc from 'picocolors'
 
 interface PackageAuthor {
   name: string
@@ -52,11 +53,8 @@ const initialName = pkg.name === 'pkg-placeholder' ? suggestedName : pkg.name
 const initialDescription = pkg.description === '_description_' ? '' : pkg.description
 const initialRepository = pkg.name === 'pkg-placeholder' ? undefined : previousRepo
 
-intro('starter-ts-template · package setup')
-note(
-  `${currentAuthor?.name ?? '小鑫同学'} (@${defaultGithubUsername})\n${defaultWebsite || 'No personal website'}`,
-  'Default maintainer',
-)
+intro(pc.bgCyan(pc.black(' starter-ts · package setup ')))
+log.info(`Default maintainer: ${currentAuthor?.name ?? '小鑫同学'} (@${defaultGithubUsername})${defaultWebsite ? ` · ${defaultWebsite}` : ''}`)
 
 const answers = await group({
   name: () => text({
@@ -200,10 +198,7 @@ if (authorCopyright >= 0)
 else
   licenseLines.splice(upstreamCopyright + 1, 0, '', newCopyright)
 
-note(
-  `Package: ${name}\n${description.trim()}\nMaintainer: ${author.trim()} (@${githubUsername})${websiteUrl ? ` · ${websiteUrl}` : ''}\nRepository: ${repositoryUrl}`,
-  'Project details',
-)
+log.info(`Project: ${name} · ${repositoryPath}`)
 
 await tasks([
   {
