@@ -71,10 +71,11 @@ function showLogo() {
   })
 }
 
-showLogo()
+if (process.stdout.isTTY && !process.env.CI)
+  showLogo()
 
 intro(pc.bgCyan(pc.black(' starter-ts ')))
-log.info(`Default maintainer: ${currentAuthor?.name ?? '小鑫同学'} (@${defaultGithubUsername})${defaultWebsite ? ` · ${defaultWebsite}` : ''}`)
+log.info(`${pc.dim('Default maintainer:')} ${currentAuthor?.name ?? '小鑫同学'} (@${defaultGithubUsername})${defaultWebsite ? ` · ${defaultWebsite}` : ''}`)
 
 const answers = await group({
   name: () => text({
@@ -218,7 +219,7 @@ if (authorCopyright >= 0)
 else
   licenseLines.splice(upstreamCopyright + 1, 0, '', newCopyright)
 
-log.info(`Project: ${name} · ${repositoryPath}`)
+log.info(`${pc.dim('Project:')} ${name} · ${repositoryPath}`)
 
 await tasks([
   {
