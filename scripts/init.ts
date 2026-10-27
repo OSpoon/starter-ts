@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto'
-import { access, mkdir, readdir, readFile, rename, rmdir, unlink, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { cancel, group, intro, log, outro, tasks, text } from '@clack/prompts'
@@ -226,24 +226,61 @@ if (authorCopyright >= 0)
 else
   licenseLines.splice(upstreamCopyright + 1, 0, '', newCopyright)
 
-const transactionId = randomUUID()
+const temporaryDirectory = await mkdtemp(join(tmpdir(), 'starter-ts-init-'))
+const fileContents: Array<[string, string]> = [
+  [packagePath, `${JSON.stringify(pkg, null, 2)}\n`],
+  [readmePath, readme],
+  [join(root, '.github/FUNDING.yml'), `github: [${githubUsername}]\n`],
+  [licensePath, licenseLines.join('\n')],
+  ...snapshotContents.map(({ file, content }): [string, string] => [join(newSnapshots, file), content]),
+]
+const fileUpdates = fileContents.map(([path, content], index) => ({
+  path,
+  content,
+  stagePath: join(temporaryDirectory, `${index}.new`),
+  backupPath: join(temporaryDirectory, `${index}.bak`),
+}))
+const [packageUpdate, readmeUpdate, fundingUpdate, licenseUpdate, ...snapshotUpdates] = fileUpdates
 const fileBackups: Array<{ path: string, backup?: string }> = []
 let snapshotsMoved = false
 let emptySnapshotBackup: string | undefined
 
-async function updateFile(path: string, content: string) {
-  const backup = `${path}.init-${transactionId}.bak`
-  let backupPath: string | undefined
+// shortcut: abrupt process termination can interrupt this transaction; add a persistent journal if crash recovery is required.
+try {
+  const temporaryDevice = (await stat(temporaryDirectory)).dev
+  for (const directory of [root, join(root, '.github'), snapshotsRoot]) {
+    if ((await stat(directory)).dev !== temporaryDevice)
+      throw new Error('System temporary directory and project files must share a filesystem for safe initialization.')
+  }
+  for (const update of fileUpdates) {
+    await writeFile(update.stagePath, update.content, { flag: 'wx' })
+    if (await readFile(update.stagePath, 'utf8') !== update.content)
+      throw new Error(`Temporary file verification failed: ${update.stagePath}`)
+  }
+}
+catch (error) {
   try {
-    await rename(path, backup)
-    backupPath = backup
+    await rm(temporaryDirectory, { recursive: true, force: true })
+  }
+  catch (cleanupError) {
+    throw new AggregateError([error, cleanupError], 'File staging failed and temporary files could not be fully removed.')
+  }
+  throw error
+}
+
+async function updateFile(update: typeof fileUpdates[number]) {
+  const { path, stagePath, backupPath: backupFilePath } = update
+  let backup: string | undefined
+  try {
+    await rename(path, backupFilePath)
+    backup = backupFilePath
   }
   catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
       throw error
   }
-  fileBackups.push({ path, backup: backupPath })
-  await writeFile(path, content)
+  fileBackups.push({ path, backup })
+  await rename(stagePath, path)
 }
 
 log.info(`${pc.dim('Project:')} ${name} · ${repositoryPath}`)
@@ -253,16 +290,16 @@ try {
     {
       title: 'Package metadata',
       task: async () => {
-        await updateFile(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
+        await updateFile(packageUpdate)
         return 'Updated package.json'
       },
     },
     {
       title: 'Project documentation',
       task: async () => {
-        await updateFile(readmePath, readme)
-        await updateFile(join(root, '.github/FUNDING.yml'), `github: [${githubUsername}]\n`)
-        await updateFile(licensePath, licenseLines.join('\n'))
+        await updateFile(readmeUpdate)
+        await updateFile(fundingUpdate)
+        await updateFile(licenseUpdate)
         return 'Updated README, funding, and license details'
       },
     },
@@ -271,16 +308,15 @@ try {
       task: async () => {
         if (oldSnapshots !== newSnapshots && !reuseExistingSnapshots) {
           if (removeEmptySnapshotTarget) {
-            const backupPath = join(snapshotsRoot, `.init-${transactionId}-empty-snapshots`)
-            await rename(newSnapshots, backupPath)
-            emptySnapshotBackup = backupPath
+            emptySnapshotBackup = join(temporaryDirectory, 'empty-snapshots')
+            await rename(newSnapshots, emptySnapshotBackup)
           }
           await mkdir(dirname(newSnapshots), { recursive: true })
           await rename(oldSnapshots, newSnapshots)
           snapshotsMoved = true
         }
-        for (const { file, content } of snapshotContents)
-          await updateFile(join(newSnapshots, file), content)
+        for (const update of snapshotUpdates)
+          await updateFile(update)
         return reuseExistingSnapshots ? `Reused snapshots for ${name}` : `Updated snapshots for ${name}`
       },
     },
@@ -322,27 +358,21 @@ catch (error) {
     }
   }
   if (rollbackErrors.length)
-    throw new AggregateError([error, ...rollbackErrors], 'Initialization failed and rollback was incomplete; inspect .init-* backups before retrying.')
+    throw new AggregateError([error, ...rollbackErrors], `Initialization rollback was incomplete; recovery files remain in ${temporaryDirectory}.`)
+  try {
+    await rm(temporaryDirectory, { recursive: true, force: true })
+  }
+  catch (cleanupError) {
+    throw new AggregateError([error, cleanupError], `Initialization rolled back, but temporary files remain in ${temporaryDirectory}.`)
+  }
   throw error
 }
 
-for (const { backup } of fileBackups) {
-  if (backup) {
-    try {
-      await unlink(backup)
-    }
-    catch {
-      log.warn(`Project is ready, but backup could not be removed: ${backup}`)
-    }
-  }
+try {
+  await rm(temporaryDirectory, { recursive: true, force: true })
 }
-if (emptySnapshotBackup) {
-  try {
-    await rmdir(emptySnapshotBackup)
-  }
-  catch {
-    log.warn(`Project is ready, but backup could not be removed: ${emptySnapshotBackup}`)
-  }
+catch {
+  log.warn(`Project is ready, but temporary recovery files remain in ${temporaryDirectory}.`)
 }
 
 outro(`${name} is ready`)
