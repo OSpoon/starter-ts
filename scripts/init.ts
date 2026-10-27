@@ -1,4 +1,5 @@
-import { access, mkdir, readdir, readFile, rename, rmdir, writeFile } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
+import { access, mkdir, readdir, readFile, rename, rmdir, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { cancel, group, intro, log, outro, tasks, text } from '@clack/prompts'
@@ -225,39 +226,123 @@ if (authorCopyright >= 0)
 else
   licenseLines.splice(upstreamCopyright + 1, 0, '', newCopyright)
 
+const transactionId = randomUUID()
+const fileBackups: Array<{ path: string, backup?: string }> = []
+let snapshotsMoved = false
+let emptySnapshotBackup: string | undefined
+
+async function updateFile(path: string, content: string) {
+  const backup = `${path}.init-${transactionId}.bak`
+  let backupPath: string | undefined
+  try {
+    await rename(path, backup)
+    backupPath = backup
+  }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+      throw error
+  }
+  fileBackups.push({ path, backup: backupPath })
+  await writeFile(path, content)
+}
+
 log.info(`${pc.dim('Project:')} ${name} · ${repositoryPath}`)
 
-await tasks([
-  {
-    title: 'Package metadata',
-    task: async () => {
-      await writeFile(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
-      return 'Updated package.json'
+try {
+  await tasks([
+    {
+      title: 'Package metadata',
+      task: async () => {
+        await updateFile(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
+        return 'Updated package.json'
+      },
     },
-  },
-  {
-    title: 'Project documentation',
-    task: async () => {
-      await writeFile(readmePath, readme)
-      await writeFile(join(root, '.github/FUNDING.yml'), `github: [${githubUsername}]\n`)
-      await writeFile(licensePath, licenseLines.join('\n'))
-      return 'Updated README, funding, and license details'
+    {
+      title: 'Project documentation',
+      task: async () => {
+        await updateFile(readmePath, readme)
+        await updateFile(join(root, '.github/FUNDING.yml'), `github: [${githubUsername}]\n`)
+        await updateFile(licensePath, licenseLines.join('\n'))
+        return 'Updated README, funding, and license details'
+      },
     },
-  },
-  {
-    title: 'API snapshots',
-    task: async () => {
-      if (oldSnapshots !== newSnapshots && !reuseExistingSnapshots) {
-        if (removeEmptySnapshotTarget)
-          await rmdir(newSnapshots)
-        await mkdir(dirname(newSnapshots), { recursive: true })
-        await rename(oldSnapshots, newSnapshots)
+    {
+      title: 'API snapshots',
+      task: async () => {
+        if (oldSnapshots !== newSnapshots && !reuseExistingSnapshots) {
+          if (removeEmptySnapshotTarget) {
+            const backupPath = join(snapshotsRoot, `.init-${transactionId}-empty-snapshots`)
+            await rename(newSnapshots, backupPath)
+            emptySnapshotBackup = backupPath
+          }
+          await mkdir(dirname(newSnapshots), { recursive: true })
+          await rename(oldSnapshots, newSnapshots)
+          snapshotsMoved = true
+        }
+        for (const { file, content } of snapshotContents)
+          await updateFile(join(newSnapshots, file), content)
+        return reuseExistingSnapshots ? `Reused snapshots for ${name}` : `Updated snapshots for ${name}`
+      },
+    },
+  ])
+}
+catch (error) {
+  const rollbackErrors: unknown[] = []
+  for (const { path, backup } of fileBackups.reverse()) {
+    try {
+      await unlink(path)
+    }
+    catch (rollbackError) {
+      if ((rollbackError as NodeJS.ErrnoException).code !== 'ENOENT')
+        rollbackErrors.push(rollbackError)
+    }
+    if (backup) {
+      try {
+        await rename(backup, path)
       }
-      for (const { file, content } of snapshotContents)
-        await writeFile(join(newSnapshots, file), content)
-      return reuseExistingSnapshots ? `Reused snapshots for ${name}` : `Updated snapshots for ${name}`
-    },
-  },
-])
+      catch (rollbackError) {
+        rollbackErrors.push(rollbackError)
+      }
+    }
+  }
+  if (snapshotsMoved) {
+    try {
+      await rename(newSnapshots, oldSnapshots)
+    }
+    catch (rollbackError) {
+      rollbackErrors.push(rollbackError)
+    }
+  }
+  if (emptySnapshotBackup) {
+    try {
+      await rename(emptySnapshotBackup, newSnapshots)
+    }
+    catch (rollbackError) {
+      rollbackErrors.push(rollbackError)
+    }
+  }
+  if (rollbackErrors.length)
+    throw new AggregateError([error, ...rollbackErrors], 'Initialization failed and rollback was incomplete; inspect .init-* backups before retrying.')
+  throw error
+}
+
+for (const { backup } of fileBackups) {
+  if (backup) {
+    try {
+      await unlink(backup)
+    }
+    catch {
+      log.warn(`Project is ready, but backup could not be removed: ${backup}`)
+    }
+  }
+}
+if (emptySnapshotBackup) {
+  try {
+    await rmdir(emptySnapshotBackup)
+  }
+  catch {
+    log.warn(`Project is ready, but backup could not be removed: ${emptySnapshotBackup}`)
+  }
+}
 
 outro(`${name} is ready`)
