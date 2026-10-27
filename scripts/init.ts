@@ -1,7 +1,7 @@
-import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { access, mkdir, readdir, readFile, rename, rmdir, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
-import { cancel, group, intro, note, outro, tasks, text } from '@clack/prompts'
+import { cancel, group, intro, log, note, outro, tasks, text } from '@clack/prompts'
 
 interface PackageAuthor {
   name: string
@@ -127,16 +127,42 @@ const websiteUrl = website.trim().replaceAll('(', '%28').replaceAll(')', '%29')
 const snapshotsRoot = join(root, 'test/__snapshots__/tsnapi')
 const oldSnapshots = join(snapshotsRoot, previousName)
 const newSnapshots = join(snapshotsRoot, name)
+const snapshotFiles = ['index.snapshot.js', 'index.snapshot.d.ts']
+let reuseExistingSnapshots = false
+let removeEmptySnapshotTarget = false
 
-await access(oldSnapshots)
 if (oldSnapshots !== newSnapshots) {
+  let existingFiles: string[] | undefined
   try {
-    await access(newSnapshots)
-    throw new Error(`Snapshot directory already exists: ${newSnapshots}`)
+    existingFiles = await readdir(newSnapshots)
   }
   catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
       throw error
+  }
+  if (existingFiles) {
+    if (existingFiles.length === 0) {
+      removeEmptySnapshotTarget = true
+    }
+    else if (snapshotFiles.every(file => existingFiles.includes(file))) {
+      reuseExistingSnapshots = true
+    }
+    else {
+      log.error(`Snapshot directory is incomplete; kept it unchanged: ${newSnapshots}`)
+      process.exit(1)
+    }
+  }
+}
+if (!reuseExistingSnapshots) {
+  try {
+    await access(oldSnapshots)
+  }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      log.error(`API snapshots not found: ${oldSnapshots}`)
+      process.exit(1)
+    }
+    throw error
   }
 }
 
@@ -199,16 +225,18 @@ await tasks([
   {
     title: 'API snapshots',
     task: async () => {
-      if (oldSnapshots !== newSnapshots) {
+      if (oldSnapshots !== newSnapshots && !reuseExistingSnapshots) {
+        if (removeEmptySnapshotTarget)
+          await rmdir(newSnapshots)
         await mkdir(dirname(newSnapshots), { recursive: true })
         await rename(oldSnapshots, newSnapshots)
       }
-      for (const file of ['index.snapshot.js', 'index.snapshot.d.ts']) {
+      for (const file of snapshotFiles) {
         const filePath = join(newSnapshots, file)
         const snapshot = (await readFile(filePath, 'utf8')).replaceAll(previousName, name)
         await writeFile(filePath, snapshot)
       }
-      return `Updated snapshots for ${name}`
+      return reuseExistingSnapshots ? `Reused snapshots for ${name}` : `Updated snapshots for ${name}`
     },
   },
 ])
