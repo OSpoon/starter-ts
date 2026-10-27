@@ -8,6 +8,14 @@
 
 _description_
 
+## Maintainer
+
+[小鑫同学 (OSpoon)](https://github.com/OSpoon) · [Website](https://ospoon.cn)
+
+## Initialize
+
+After installing dependencies, run `pnpm run init` to set the package name, description, maintainer details, and GitHub repository.
+
 ## Note for Developers
 
 This starter recommands using [npm Trusted Publisher](https://github.com/e18e/ecosystem-issues/issues/201), where the release is done on CI to ensure the security of the packages.
@@ -19,14 +27,14 @@ Then for the future releases, you can run `pnpm run release` to do the release a
 ## Sponsors
 
 <p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg">
-    <img src="https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg" alt="Sponsors"/>
+  <a href="https://github.com/sponsors/OSpoon">
+    <img src="https://img.shields.io/github/sponsors/OSpoon?style=flat" alt="GitHub Sponsors"/>
   </a>
 </p>
 
 ## License
 
-[MIT](./LICENSE) License © [Anthony Fu](https://github.com/antfu)
+[MIT](./LICENSE.md) License © [Anthony Fu](https://github.com/antfu) and [小鑫同学](https://github.com/OSpoon)
 
 <!-- Badges -->
 
@@ -36,7 +44,7 @@ Then for the future releases, you can run `pnpm run release` to do the release a
 [npm-downloads-href]: https://npmx.dev/package/pkg-placeholder
 [bundle-src]: https://img.shields.io/bundlephobia/minzip/pkg-placeholder?style=flat&colorA=080f12&colorB=1fa669&label=minzip
 [bundle-href]: https://bundlephobia.com/result?p=pkg-placeholder
-[license-src]: https://img.shields.io/github/license/antfu/pkg-placeholder.svg?style=flat&colorA=080f12&colorB=1fa669
-[license-href]: https://github.com/antfu/pkg-placeholder/blob/main/LICENSE
+[license-src]: https://img.shields.io/github/license/OSpoon/pkg-placeholder.svg?style=flat&colorA=080f12&colorB=1fa669
+[license-href]: https://github.com/OSpoon/pkg-placeholder/blob/main/LICENSE.md
 [jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=1fa669
 [jsdocs-href]: https://www.jsdocs.io/package/pkg-placeholder

@@ -177,6 +177,9 @@ catalogs:
     '@antfu/ni':
       specifier: ^30.6.0
       version: 30.6.0
+    '@clack/prompts':
+      specifier: ^1.8.1
+      version: 1.8.1
     bumpp:
       specifier: ^12.3.0
       version: 12.3.0
@@ -251,6 +254,9 @@ importers:
       '@antfu/utils':
         specifier: catalog:inlined
         version: 9.3.0
+      '@clack/prompts':
+        specifier: catalog:cli
+        version: 1.8.1
       '@types/node':
         specifier: catalog:types
         version: 26.6.5

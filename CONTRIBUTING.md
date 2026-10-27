@@ -1,1 +1,1 @@
-Please refer to https://github.com/antfu/contribute
+Please use this repository's GitHub issues and pull requests to discuss contributions.

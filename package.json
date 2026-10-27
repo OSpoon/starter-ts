@@ -4,15 +4,20 @@
   "version": "0.0.0",
   "packageManager": "pnpm@12.8.1",
   "description": "_description_",
-  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "author": {
+    "name": "小鑫同学",
+    "url": "https://github.com/OSpoon"
+  },
   "license": "MIT",
-  "funding": "https://github.com/sponsors/antfu",
-  "homepage": "https://github.com/antfu/pkg-placeholder#readme",
+  "funding": "https://github.com/sponsors/OSpoon",
+  "homepage": "https://github.com/OSpoon/pkg-placeholder#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antfu/pkg-placeholder.git"
+    "url": "git+https://github.com/OSpoon/pkg-placeholder.git"
   },
-  "bugs": "https://github.com/antfu/pkg-placeholder/issues",
+  "bugs": {
+    "url": "https://github.com/OSpoon/pkg-placeholder/issues"
+  },
   "keywords": [],
   "sideEffects": false,
   "exports": {
@@ -28,6 +33,7 @@
     "dev": "tsdown --watch",
     "knip": "knip",
     "lint": "eslint --cache",
+    "init": "tsx scripts/init.ts",
     "prepack": "nr build",
     "release": "bumpp",
     "start": "tsx src/index.ts",
@@ -41,6 +47,7 @@
     "dev": "Rebuild on change during development",
     "knip": "Find unused files, exports and dependencies",
     "lint": "Check for code style issues",
+    "init": "Initialize package and maintainer metadata",
     "prepack": "Build before publishing",
     "release": "Bump version and publish a release",
     "start": "Run the entry file",
@@ -54,6 +61,7 @@
     "@antfu/ni": "catalog:cli",
     "@antfu/skills": "catalog:agentic",
     "@antfu/utils": "catalog:inlined",
+    "@clack/prompts": "catalog:cli",
     "@types/node": "catalog:types",
     "bumpp": "catalog:cli",
     "eslint": "catalog:cli",

@@ -30,6 +30,7 @@ catalogs:
   cli:
     '@antfu/eslint-config': ^9.5.1
     '@antfu/ni': ^30.6.0
+    '@clack/prompts': ^1.8.1
     bumpp: ^12.3.0
     eslint: ^10.11.0
     eslint-plugin-slop: ^0.1.3
