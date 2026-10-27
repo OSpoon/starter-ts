@@ -1,7 +1,7 @@
 import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
-import { cancel, group, intro, outro, text } from '@clack/prompts'
+import { cancel, group, intro, note, outro, tasks, text } from '@clack/prompts'
 
 interface PackageAuthor {
   name: string
@@ -52,7 +52,11 @@ const initialName = pkg.name === 'pkg-placeholder' ? suggestedName : pkg.name
 const initialDescription = pkg.description === '_description_' ? '' : pkg.description
 const initialRepository = pkg.name === 'pkg-placeholder' ? undefined : previousRepo
 
-intro('Initialize this package')
+intro('starter-ts-template · package setup')
+note(
+  `${currentAuthor?.name ?? '小鑫同学'} (@${defaultGithubUsername})\n${defaultWebsite || 'No personal website'}`,
+  'Default maintainer',
+)
 
 const answers = await group({
   name: () => text({
@@ -124,6 +128,7 @@ const snapshotsRoot = join(root, 'test/__snapshots__/tsnapi')
 const oldSnapshots = join(snapshotsRoot, previousName)
 const newSnapshots = join(snapshotsRoot, name)
 
+await access(oldSnapshots)
 if (oldSnapshots !== newSnapshots) {
   try {
     await access(newSnapshots)
@@ -133,8 +138,6 @@ if (oldSnapshots !== newSnapshots) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
       throw error
   }
-  await mkdir(dirname(newSnapshots), { recursive: true })
-  await rename(oldSnapshots, newSnapshots)
 }
 
 pkg.name = name
@@ -161,9 +164,6 @@ else
   readme = readme.replace('## Initialize', `${maintainer}\n\n## Initialize`)
 readme = readme.replace('[MIT](./LICENSE)', '[MIT](./LICENSE.md)')
 
-await writeFile(readmePath, readme)
-await writeFile(join(root, '.github/FUNDING.yml'), `github: [${githubUsername}]\n`)
-
 const licensePath = join(root, 'LICENSE.md')
 const licenseLines = (await readFile(licensePath, 'utf8')).split('\n')
 const upstreamCopyright = licenseLines.findIndex(line => line.startsWith('Copyright (c) 2025-PRESENT Anthony Fu'))
@@ -173,13 +173,44 @@ if (authorCopyright >= 0)
   licenseLines[authorCopyright] = newCopyright
 else
   licenseLines.splice(upstreamCopyright + 1, 0, '', newCopyright)
-await writeFile(licensePath, licenseLines.join('\n'))
 
-for (const file of ['index.snapshot.js', 'index.snapshot.d.ts']) {
-  const filePath = join(newSnapshots, file)
-  const snapshot = (await readFile(filePath, 'utf8')).replaceAll(previousName, name)
-  await writeFile(filePath, snapshot)
-}
+note(
+  `Package: ${name}\n${description.trim()}\nMaintainer: ${author.trim()} (@${githubUsername})${websiteUrl ? ` · ${websiteUrl}` : ''}\nRepository: ${repositoryUrl}`,
+  'Project details',
+)
 
-await writeFile(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
-outro(`Initialized ${name}`)
+await tasks([
+  {
+    title: 'Package metadata',
+    task: async () => {
+      await writeFile(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
+      return 'Updated package.json'
+    },
+  },
+  {
+    title: 'Project documentation',
+    task: async () => {
+      await writeFile(readmePath, readme)
+      await writeFile(join(root, '.github/FUNDING.yml'), `github: [${githubUsername}]\n`)
+      await writeFile(licensePath, licenseLines.join('\n'))
+      return 'Updated README, funding, and license details'
+    },
+  },
+  {
+    title: 'API snapshots',
+    task: async () => {
+      if (oldSnapshots !== newSnapshots) {
+        await mkdir(dirname(newSnapshots), { recursive: true })
+        await rename(oldSnapshots, newSnapshots)
+      }
+      for (const file of ['index.snapshot.js', 'index.snapshot.d.ts']) {
+        const filePath = join(newSnapshots, file)
+        const snapshot = (await readFile(filePath, 'utf8')).replaceAll(previousName, name)
+        await writeFile(filePath, snapshot)
+      }
+      return `Updated snapshots for ${name}`
+    },
+  },
+])
+
+outro(`${name} is ready`)
