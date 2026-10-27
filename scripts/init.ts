@@ -185,6 +185,12 @@ if (!reuseExistingSnapshots) {
   }
 }
 
+const snapshotSource = reuseExistingSnapshots ? newSnapshots : oldSnapshots
+const snapshotContents = await Promise.all(snapshotFiles.map(async (file) => {
+  const content = await readFile(join(snapshotSource, file), 'utf8')
+  return { file, content: content.replaceAll(previousName, name) }
+}))
+
 pkg.name = name
 pkg.description = description.trim()
 pkg.author = { name: author.trim(), url: githubProfile }
@@ -247,11 +253,8 @@ await tasks([
         await mkdir(dirname(newSnapshots), { recursive: true })
         await rename(oldSnapshots, newSnapshots)
       }
-      for (const file of snapshotFiles) {
-        const filePath = join(newSnapshots, file)
-        const snapshot = (await readFile(filePath, 'utf8')).replaceAll(previousName, name)
-        await writeFile(filePath, snapshot)
-      }
+      for (const { file, content } of snapshotContents)
+        await writeFile(join(newSnapshots, file), content)
       return reuseExistingSnapshots ? `Reused snapshots for ${name}` : `Updated snapshots for ${name}`
     },
   },
