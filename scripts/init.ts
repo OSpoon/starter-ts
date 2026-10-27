@@ -53,6 +53,18 @@ const initialName = pkg.name === 'pkg-placeholder' ? suggestedName : pkg.name
 const initialDescription = pkg.description === '_description_' ? '' : pkg.description
 const initialRepository = pkg.name === 'pkg-placeholder' ? undefined : previousRepo
 
+const logoLines = [
+  '█████  █████   ███   ████  █████  █████  ████    █████  █████',
+  '█        █    █   █  █   █   █      █    █   █   █      █    ',
+  '█████    █    █████  ████    █      █    ████    ████   █████',
+  '    █    █    █   █  █  █    █      █    █  █    █          █',
+  '█████    █    █   █  █   █   █    █████  █   █   ████   █████',
+]
+const logoGrays = ['\x1B[38;5;250m', '\x1B[38;5;248m', '\x1B[38;5;245m', '\x1B[38;5;243m', '\x1B[38;5;240m']
+console.log()
+for (const [index, line] of logoLines.entries())
+  console.log(pc.isColorSupported ? `${logoGrays[index]}${line}\x1B[0m` : line)
+
 intro(pc.bgCyan(pc.black(' starter-ts · package setup ')))
 log.info(`Default maintainer: ${currentAuthor?.name ?? '小鑫同学'} (@${defaultGithubUsername})${defaultWebsite ? ` · ${defaultWebsite}` : ''}`)
 
